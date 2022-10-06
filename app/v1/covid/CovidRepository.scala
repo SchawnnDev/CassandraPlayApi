@@ -1,16 +1,20 @@
 package v1.covid
 
 import akka.actor.ActorSystem
-import com.datastax.driver.core.Row
-import com.datastax.driver.core.querybuilder.QueryBuilder.insertInto
+import com.datastax.driver.core
+import com.datastax.driver.core.{Row, SimpleStatement}
+import com.datastax.driver.core.querybuilder.{Clause, QueryBuilder}
+import com.datastax.driver.core.querybuilder.QueryBuilder.{insertInto, select}
 import play.api.MarkerContext
 import play.api.libs.concurrent.CustomExecutionContext
-import play.api.libs.json.{Json, Writes}
 import v1.CassandraProvider
 
 import javax.inject.{Inject, Singleton}
+import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.concurrent.Future
-import scala.jdk.CollectionConverters.IterableHasAsScala
+import utils.CassandraPaging
+
+import java.sql.Statement
 
 object CovidRow {
   def fromRow(r: Row): CovidRow = CovidRow(
@@ -37,7 +41,7 @@ trait CovidRepository {
   // def deleteByUid() = ???
   def get(uid: String)(implicit mc: MarkerContext): Future[Option[CovidRow]]
 
-  def list()(implicit mc: MarkerContext): Future[Set[CovidRow]]
+  def list(page: Option[Int])(implicit mc: MarkerContext): Future[Set[CovidRow]]
 }
 
 class PostExecutionContext @Inject()(actorSystem: ActorSystem)
@@ -47,10 +51,23 @@ class PostExecutionContext @Inject()(actorSystem: ActorSystem)
 class CovidRepositoryImpl @Inject()(implicit ec: PostExecutionContext)
   extends CovidRepository {
 
-  override def list()(implicit mc: MarkerContext): Future[Set[CovidRow]] =
+  override def list(page: Option[Int])(implicit mc: MarkerContext): Future[Set[CovidRow]] =
     Future {
-      val resultSet = CassandraProvider.session.execute("SELECT * FROM covid.dataset")
-      resultSet.all().asScala.map(r => CovidRow.fromRow(r)).toSet
+      val paging = new CassandraPaging(CassandraProvider.session)
+
+      // paging
+      page match {
+        case Some(n) =>
+          val limit = 20
+          val start = limit * n
+          val statement = new SimpleStatement("SELECT * FROM covid.dataset")
+          val rows = paging.fetchRowsWithPage(statement, Math.max(1, n), limit)
+          rows.asScala.map(r => CovidRow.fromRow(r)).toSet
+        case _ =>
+          val resultSet = CassandraProvider.session.execute("SELECT * FROM covid.dataset LIMIT 60")
+          resultSet.all().asScala.map(r => CovidRow.fromRow(r)).toSet
+      }
+
     }
 
   override def create(covidRow: CovidRow)(

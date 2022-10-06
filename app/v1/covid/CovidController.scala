@@ -1,5 +1,6 @@
 package v1.covid
 
+import io.swagger.annotations.{Api, ApiParam, ApiResponse, ApiResponses}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesProvider}
 import play.api.libs.json.{Json, Writes}
@@ -9,6 +10,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
+@Api(value = "Covid DataSet", produces = "application/json")
 class CovidController @Inject()(val controllerComponents: ControllerComponents, repo: CovidRepositoryImpl)
                                (implicit ec: ExecutionContext)
   extends BaseController with I18nSupport {
@@ -25,13 +27,20 @@ class CovidController @Inject()(val controllerComponents: ControllerComponents, 
     )
   }
 
+  def index(@ApiParam(value = "Page") page: Option[Int]): Action[AnyContent] = Action.async {
+    implicit request =>
+      repo.list(page).map {
+        r => Ok(Json.prettyPrint(Json.toJson(r.map(f => Json.toJson(f)(implicitCovidRowWrites)))))
+      }
+  }
+/*
   def index: Action[AnyContent] = Action.async {
     implicit request =>
       repo.list().map {
         r => Ok(Json.toJson(r.map(f => Json.toJson(f)(implicitCovidRowWrites))))
       }
   }
-
+   */
   def process: Action[AnyContent] = Action.async {
     implicit request => processJsonPost()
   }
@@ -72,7 +81,8 @@ class CovidController @Inject()(val controllerComponents: ControllerComponents, 
     form.bindFromRequest().fold(failure, success)
   }
 
-  def get(uid: String): Action[AnyContent] = Action.async {
+  @ApiResponses(Array(new ApiResponse(code = 404, message = "Covid Row not found")))
+  def get(@ApiParam(value = "ID of the Covid data row") uid: String): Action[AnyContent] = Action.async {
     implicit request =>
       repo.get(uid).map {
         case Some(n) =>
@@ -81,5 +91,16 @@ class CovidController @Inject()(val controllerComponents: ControllerComponents, 
           NotFound
       }
   }
+  /*
+  def get(uid: String): Action[AnyContent] = Action.async {
+    implicit request =>
+      repo.get(uid).map {
+        case Some(n) =>
+          Ok(Json.prettyPrint(Json.toJson(n)(implicitCovidRowWrites)))
+        case None =>
+          NotFound
+      }
+  }*/
+
 
 }
