@@ -2,9 +2,10 @@ package v1.covid.controllers
 
 import io.swagger.annotations.{Api, ApiParam, ApiResponse, ApiResponses}
 import play.api.data.Form
-import play.api.i18n.{I18nSupport, MessagesProvider}
-import play.api.libs.json.{Json, Writes}
+import play.api.i18n.MessagesProvider
+import play.api.libs.json.Json
 import play.api.mvc._
+import v1.covid.controllers.CovidController.implicitCovidRowWrites
 import v1.covid.repositories.{CovidElasticRepository, CovidRow}
 
 import javax.inject.{Inject, Singleton}

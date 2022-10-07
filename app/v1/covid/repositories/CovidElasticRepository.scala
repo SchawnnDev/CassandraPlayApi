@@ -1,16 +1,14 @@
 package v1.covid.repositories
 
-import com.datastax.driver.core.querybuilder.QueryBuilder.insertInto
 import com.sksamuel.elastic4s.ElasticApi.search
 import play.api.MarkerContext
-import v1.providers.{CassandraProvider, ElasticProvider}
+import v1.providers.ElasticProvider
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.requests.common.RefreshPolicy
-import com.sksamuel.elastic4s.requests.get.GetResponse
-import com.sksamuel.elastic4s.{Hit, HitReader, Indexable, RequestFailure, RequestSuccess}
+import com.sksamuel.elastic4s.{Hit, HitReader, Indexable}
 import play.api.libs.json.Json
 import v1.covid.controllers.CovidController.implicitCovidRowWrites
 

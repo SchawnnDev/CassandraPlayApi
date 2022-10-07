@@ -1,15 +1,11 @@
 package v1.covid.repositories
 
 import akka.actor.ActorSystem
-import com.datastax.driver.core.querybuilder.QueryBuilder.insertInto
-import com.datastax.driver.core.{Row, SimpleStatement}
+import com.datastax.driver.core.Row
 import play.api.MarkerContext
 import play.api.libs.concurrent.CustomExecutionContext
-import utils.CassandraPaging
-import v1.providers.CassandraProvider
 
-import javax.inject.{Inject, Singleton}
-import scala.collection.JavaConverters.asScalaBufferConverter
+import javax.inject.Inject
 import scala.concurrent.Future
 
 object CovidRow {
