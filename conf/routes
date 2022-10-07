@@ -9,9 +9,15 @@
 # ->     /v1/covid                           v1.covid.CovidRouter
 
 # CovidRouter
-GET     /v1/covid/:uid                 v1.covid.CovidController.get(uid: String)
-GET     /v1/covid                      v1.covid.CovidController.index(page: Option[Int])
-POST    /v1/covid                      v1.covid.CovidController.process
+
+# Cassandra
+GET     /v1/cassandra/covid/:uid                 v1.covid.controllers.CovidCassandraController.get(uid: String)
+GET     /v1/cassandra/covid                      v1.covid.controllers.CovidCassandraController.index(page: Option[Int])
+POST    /v1/cassandra/covid                      v1.covid.controllers.CovidCassandraController.process
+# Elastic
+GET     /v1/elastic/covid/:uid                 v1.covid.controllers.CovidElasticController.get(uid: String)
+GET     /v1/elastic/covid                      v1.covid.controllers.CovidElasticController.index(page: Option[Int])
+POST    /v1/elastic/covid                      v1.covid.controllers.CovidElasticController.process
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

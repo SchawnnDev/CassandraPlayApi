@@ -17,7 +17,7 @@ libraryDependencies ++= Seq(
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.11.1"
 )
 // Elastic
-//libraryDependencies += "com.sksamuel.elastic4s" %% "elastic4s-client-esjava" % "8.4.2"
+libraryDependencies += "com.sksamuel.elastic4s" %% "elastic4s-client-esjava" % "8.4.2"
 
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "fr.mind7.controllers._"

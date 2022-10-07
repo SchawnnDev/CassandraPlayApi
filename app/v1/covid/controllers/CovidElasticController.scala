@@ -1,31 +1,19 @@
-package v1.covid
+package v1.covid.controllers
 
 import io.swagger.annotations.{Api, ApiParam, ApiResponse, ApiResponses}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesProvider}
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc._
+import v1.covid.repositories.{CovidElasticRepository, CovidRow}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-@Api(value = "Covid DataSet", produces = "application/json")
-class CovidController @Inject()(val controllerComponents: ControllerComponents, repo: CovidRepositoryImpl)
-                               (implicit ec: ExecutionContext)
-  extends BaseController with I18nSupport {
-
-  val implicitCovidRowWrites: Writes[CovidRow] = (covidRow: CovidRow) => {
-    Json.obj(
-      "cord_uidsha" -> covidRow.cord_uidsha, "source_x" -> covidRow.source_x,
-      "title" -> covidRow.title, "doi" -> covidRow.doi, "pmcid" -> covidRow.pmcid, "pubmed_id" -> covidRow.pubmed_id,
-      "license" -> covidRow.license, "abstract" -> covidRow.abstract_x, "publish_time" -> covidRow.publish_time,
-      "authors" -> covidRow.authors, "journal" -> covidRow.journal, "mag_id" -> covidRow.mag_id,
-      "who_covidence_id" -> covidRow.who_covidence_id, "arxiv_id" -> covidRow.arxiv_id,
-      "pdf_json_files" -> covidRow.pdf_json_files, "pmc_json_files" -> covidRow.pmc_json_files,
-      "url" -> covidRow.url, "s2_id" -> covidRow.s2_id
-    )
-  }
+@Api(value = "Covid DataSet using Elastic Provider", produces = "application/json")
+class CovidElasticController @Inject()(val controllerComponents: ControllerComponents, repo: CovidElasticRepository)
+                                      (implicit ec: ExecutionContext) extends CovidController {
 
   def index(@ApiParam(value = "Page") page: Option[Int]): Action[AnyContent] = Action.async {
     implicit request =>
@@ -33,14 +21,15 @@ class CovidController @Inject()(val controllerComponents: ControllerComponents, 
         r => Ok(Json.prettyPrint(Json.toJson(r.map(f => Json.toJson(f)(implicitCovidRowWrites)))))
       }
   }
-/*
-  def index: Action[AnyContent] = Action.async {
-    implicit request =>
-      repo.list().map {
-        r => Ok(Json.toJson(r.map(f => Json.toJson(f)(implicitCovidRowWrites))))
-      }
-  }
-   */
+
+  /*
+    def index: Action[AnyContent] = Action.async {
+      implicit request =>
+        repo.list().map {
+          r => Ok(Json.toJson(r.map(f => Json.toJson(f)(implicitCovidRowWrites))))
+        }
+    }
+     */
   def process: Action[AnyContent] = Action.async {
     implicit request => processJsonPost()
   }
